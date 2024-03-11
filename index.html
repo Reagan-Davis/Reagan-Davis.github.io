@@ -2,7 +2,7 @@
 <html>
 <h1>Welcome!</h1>
 <body>
-<p>If you're seeing this text, that means this page isn't complete yet. This will <i>eventually</i> serve as a portfolio hosting a bunch of my personal projects from the past and into the future.</p>
+<p>If you're seeing this text, that means this page isn't complete yet. This will <i>eventually</i> serve as a portfolio hosting a bunch of my personal projects and showcasing my geospatial skills.</p>
 </body>
 <img
   src="icons/thumbs_up.png"
@@ -13,4 +13,16 @@
   src="icons/construction.png"
   title="Come back later"
 />
+<form id="fs-frm" name="simple-contact-form" accept-charset="utf-8" action="https://formspree.io/f/xkndzqep" method="post">
+  <fieldset id="fs-frm-inputs">
+    <label for="full-name">Full Name</label>
+    <input type="text" name="name" id="full-name" placeholder="First and Last" required="">
+    <label for="email-address">Email Address</label>
+    <input type="email" name="_replyto" id="email-address" placeholder="email@domain.tld" required="">
+    <label for="message">Message</label>
+    <textarea rows="5" name="message" id="message" placeholder="Aenean lacinia bibendum nulla sed consectetur. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Donec ullamcorper nulla non metus auctor fringilla nullam quis risus." required=""></textarea>
+    <input type="hidden" name="_subject" id="email-subject" value="Contact Form Submission">
+  </fieldset>
+  <input type="submit" value="Submit">
+</form>
 </html>
