@@ -1,5 +1,51 @@
 <!DOCTYPE html>
 <html>
+<head>
+<style>
+body {margin:0;}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover:not(.active) {
+  background-color: #111;
+}
+
+.active {
+  background-color: #04AA6D;
+}
+</style>
+</head>
+<body>
+
+<ul>
+  <li><a class="active" href="#home">Home</a></li>
+  <li><a href="#about">About</a></li>
+  <li><a href="#news">Projects</a></li>
+  <li><a href="#contact">Contact</a></li>
+</ul>
+
+</body>
 <h1>Welcome!</h1>
 <body>
 <p>If you're seeing this text, that means this page isn't complete yet. This will <i>eventually</i> serve as a portfolio hosting a bunch of my personal projects and showcasing my geospatial skills.</p>
@@ -9,10 +55,6 @@
   title="Epic thumbs up guy"
 />
 <h1>Under Construction</h1>
-<img
-  src="icons/construction.png"
-  title="Come back later"
-/>
 <form id="fs-frm" name="simple-contact-form" accept-charset="utf-8" action="https://formspree.io/f/xkndzqep" method="post">
   <fieldset id="fs-frm-inputs">
     <label for="full-name">Full Name</label>
