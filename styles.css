@@ -1,12 +1,20 @@
 body {margin:0;}
 
+h1 {
+  font-family: Helvetica, sans-serif;
+}
+
+p {
+  font-family: Verdana, sans-serif;
+}
+
 ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
   overflow: hidden;
   background-color: #000000;
-  border: 2px solid #777777;
+  border-bottom: 2px solid #777777;
   font-family: Helvetica, sans-serif;
 }
 
@@ -20,11 +28,10 @@ li a, .dropbtn {
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
-  border-right: 2px solid #777777
 }
 
-li a:hover:not(.active):not(.name) {
-  background-color: #444444;
+li a:hover:not(.active):not(.logo) {
+  background-color: #666666;
 }
 
 .active {
@@ -38,7 +45,7 @@ li a:hover:not(.active):not(.name) {
 }
 
 .dropdown:hover .dropbtn {
-  background-color: #444444;
+  background-color: #666666;
 }
 
 li.dropdown {
@@ -63,9 +70,37 @@ li.dropdown {
   border: 0px solid #777777;
 }
 
-.dropdown-content a:hover {background-color: #666666;}
+.dropdown-content a:hover {
+  background-color: #666666;
+}
 
 
 .dropdown:hover .dropdown-content {
   display: block;
+}
+
+footer {
+  text-align: center;
+  padding: 3px;
+  font-family: Helvetica, sans-serif;
+  width: 99.3%;
+  position: absolute;
+  margin: auto;
+  bottom: 0;
+  border-top: 3px solid #000000;
+  background-color: #FFFFFF;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  background-color: inherit;
+  margin-top: 10px;
+  transition: transform 0.7s ease-in-out;
+}
+
+@keyframes constant_rotate {
+  from {rotate: 0deg;}
+  to {rotate: 360deg;}
 }
