@@ -6,19 +6,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Home | Reagan Davis</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V0VYGX7EXQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-V0VYGX7EXQ');
+  </script>
+
+  <!-- D3 Library -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <!-- Maps -->
+  <script src="globe.js"></script>
 </head>
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-V0VYGX7EXQ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-V0VYGX7EXQ');
-</script>
-
-<script> src="globe.js"</script>
 
 <body>
 
@@ -40,13 +44,65 @@
 <div style="padding:20px;margin-top:30px;text-align:center;">
 
 <h1>Welcome!</h1>
-<p>This website is currently being rebuilt from the ground up. If you need to contact me, reach out through wherever you found this link. Check back soon!</p>
-<img style="animation:constant_rotate 10s infinite;animation-timing-function: linear;"
-  src="icons/top_down.png"
-  title="Hi"
-  height="300"
-  width="300"
-/>
+<p>This website is currently undergoing construction.</p>
+<div id="content">
+  <canvas width="800" height="400"></canvas>
+</div>
+
+<script type="module">
+
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+let geojson = {}
+
+let context = d3.select('#content canvas')
+  .node()
+  .getContext('2d');
+
+let projection = d3.geoOrthographic()
+  .scale(150);
+
+let geoGenerator = d3.geoPath()
+  .projection(projection)
+  .pointRadius(4)
+  .context(context);
+
+let yaw = 350;
+
+function update() {
+  projection.rotate([yaw, -25])
+
+  context.clearRect(0, 0, 800, 600);
+
+  context.lineWidth = 0.5;
+  context.strokeStyle = '#000000';
+
+  context.beginPath();
+  geoGenerator({type: 'FeatureCollection', features: geojson.features})
+  context.stroke();
+
+  // Graticule
+  let graticule = d3.geoGraticule();
+  context.beginPath();
+  context.strokeStyle = '#ddd';
+  geoGenerator(graticule());
+  context.stroke();
+
+  yaw += 0.25
+}
+
+// REQUEST DATA
+// Formerly ne_50m_land.geojson
+d3.json('https://gist.githubusercontent.com/d3indepth/f28e1c3a99ea6d84986f35ac8646fac7/raw/c58cede8dab4673c91a3db702d50f7447b373d98/ne_110m_land.json')
+	.then(function(json) {
+  geojson = json;
+  window.setInterval(update, 5);
+})
+
+// Append the SVG element.
+content.append(svg.node());
+
+</script>
 </div>
 
 <div>
