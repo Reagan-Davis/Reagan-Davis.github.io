@@ -7,7 +7,7 @@ let context = d3.select('#content canvas')
   .getContext('2d');
 
 let projection = d3.geoOrthographic()
-  .scale(150);
+  .scale(200);
 
 let geoGenerator = d3.geoPath()
   .projection(projection)
@@ -35,7 +35,7 @@ function update() {
   geoGenerator(graticule());
   context.stroke();
 
-  yaw += 0.25
+  yaw += 0.15
 }
 
 // REQUEST DATA
