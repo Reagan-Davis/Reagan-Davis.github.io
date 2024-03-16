@@ -28,7 +28,6 @@ function update() {
   geoGenerator({type: 'FeatureCollection', features: geojson.features})
   context.stroke();
   //context.fill();
-  //context.fillStyle = '#ddd';
 
   // Graticule
   let graticule = d3.geoGraticule();
@@ -40,45 +39,91 @@ function update() {
   // Indiana Jones
 
   // San Francisco
-	let circle = d3.geoCircle().center([-122.2204, 37.7203]).radius(1)
+	let circle = d3.geoCircle().center([-122.2204, 37.7203]).radius(0.5)
 	context.beginPath();
 	context.strokeStyle = 'red';
 	geoGenerator(circle());
 	context.stroke();
   context.fill();
+  context.fillStyle = 'red';
+
+  // Manilla
+	circle = d3.geoCircle().center([120.9809, 14.6007]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Patan
+	circle = d3.geoCircle().center([85.3228, 27.6601]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Karachi
+	circle = d3.geoCircle().center([67.1637, 24.9056]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  //Baghdad
+	circle = d3.geoCircle().center([44.2348, 33.2680]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Cairo
+	circle = d3.geoCircle().center([31.4157, 30.1154]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
 
 	// San Francisco -> Manilla
 	context.beginPath();
 	context.strokeStyle = 'red';
-  context.lineWidth = 1.5;
+  context.lineWidth = 1;
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[-122.2204, 37.7203], [120.9809, 14.6007]]}});
 	context.stroke();
 
 	// Manilla -> Patan
 	context.beginPath();
 	context.strokeStyle = 'red';
-  context.lineWidth = 1.5;
+  context.lineWidth = 1;
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[120.9809, 14.6007], [85.3228, 27.6601]]}});
 	context.stroke();
 
 	// Patan -> Karachi
 	context.beginPath();
 	context.strokeStyle = 'red';
-  context.lineWidth = 1.5;
+  context.lineWidth = 1;
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[85.3228, 27.6601], [67.1637, 24.9056]]}});
 	context.stroke();
 
 	//  Karachi -> Baghdad
 	context.beginPath();
 	context.strokeStyle = 'red';
-  context.lineWidth = 1.5;
+  context.lineWidth = 1;
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[67.1637, 24.9056], [44.2348, 33.2680]]}});
 	context.stroke();
 
 	//  Baghdad -> Cairo
 	context.beginPath();
 	context.strokeStyle = 'red';
-  context.lineWidth = 1.5;
+  context.lineWidth = 1;
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[44.2348, 33.2680], [31.4157, 30.1154]]}});
 	context.stroke();
 
