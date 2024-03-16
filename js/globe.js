@@ -36,7 +36,9 @@ function update() {
   geoGenerator(graticule());
   context.stroke();
 
-  // Indiana Jones
+  yaw += 0.15
+
+  // Indiana Jones 1
 
   // San Francisco
 	let circle = d3.geoCircle().center([-122.2204, 37.7203]).radius(0.5)
@@ -127,7 +129,95 @@ function update() {
 	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[44.2348, 33.2680], [31.4157, 30.1154]]}});
 	context.stroke();
 
-  yaw += 0.35
+
+  
+  // Indiana Jones 2
+
+  // Shanghai
+	circle = d3.geoCircle().center([121.3440, 31.2014]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+
+  
+  // Indiana Jones 2
+
+  // New York
+	circle = d3.geoCircle().center([-73.7918, 40.6471]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // St Johns
+	circle = d3.geoCircle().center([-52.7949, 47.5215]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Azores
+	circle = d3.geoCircle().center([-25.4340, 37.7179]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Lisbon
+	circle = d3.geoCircle().center([-9.1352, 38.7781]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+  // Venice
+	circle = d3.geoCircle().center([12.3354, 45.4979]).radius(0.5)
+	context.beginPath();
+	context.strokeStyle = 'red';
+	geoGenerator(circle());
+	context.stroke();
+  context.fill();
+  context.fillStyle = 'red';
+
+	//  New York -> St Johns
+	context.beginPath();
+	context.strokeStyle = 'red';
+  context.lineWidth = 1;
+	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[-73.7918, 40.6471], [-52.7949, 47.5215]]}});
+	context.stroke();
+
+	//  St Johns -> Azores
+	context.beginPath();
+	context.strokeStyle = 'red';
+  context.lineWidth = 1;
+	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[-52.7949, 47.5215], [-25.4340, 37.7179]]}});
+	context.stroke();
+
+	//  Azores -> Lisbon
+	context.beginPath();
+	context.strokeStyle = 'red';
+  context.lineWidth = 1;
+	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[-25.4340, 37.7179], [-9.1352, 38.7781]]}});
+	context.stroke();
+
+	//  Lisbon -> Venice
+	context.beginPath();
+	context.strokeStyle = 'red';
+  context.lineWidth = 1;
+	geoGenerator({type: 'Feature', geometry: {type: 'LineString', coordinates: [[-9.1352, 38.7781], [12.3354, 45.4979]]}});
+	context.stroke();
 }
 
 // REQUEST DATA
