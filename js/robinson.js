@@ -7,7 +7,8 @@ let context = d3.select('#robinson canvas')
   .getContext('2d');
   
 let projection = d3.geoEqualEarth()
-  .scale(150);
+  .scale(150)
+  .rotate([-10, 0, 0]);
 
 let geoGenerator = d3.geoPath()
   .projection(projection)
