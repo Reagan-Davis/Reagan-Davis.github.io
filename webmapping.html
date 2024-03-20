@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!--Copyright 2024 Reagan Davis-->
+<html lang="en">
+<link rel="stylesheet" href="styles.css">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.png">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Webmapping | Reagan Davis</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V0VYGX7EXQ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-V0VYGX7EXQ');
+  </script>
+
+  <!-- D3 Library -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="//d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/5.1.5/turf.min.js"></script>
+</head>
+
+<body>
+
+<ul>
+  <li><a class="logo">Reagan Davis</a></li>
+  <li><a class="active" href="index.html">Home</a></li>
+  <!-- <li><a href="about.html">About</a></li>
+  <li class="dropdown">
+    <a href="javascript:void(0)" class="dropbtn">Projects</a>
+    <div class="dropdown-content">
+      <a href="analysis_projects.html">Analysis</a>
+      <a href="analysis_projects.html">Web Mapping</a>
+      <a href="cartography_projects.html">Cartography</a>
+      <a href="historical_projects.html">Historical</a>
+      <a href="other_projects.html">Other</a>
+    </div>
+  </li> -->
+</ul>
+
+<div style="padding:20px;margin-top:30px;text-align:center;">
+
+<p>Select a polygon to highlight</p>
+
+<div id="robinson">
+  <canvas width="950" height="500";></canvas>
+</div>
+  <!-- Orthographic Globe -->
+  <!-- <script src="js/robinson.js" type="module"></script>  -->
+  <script src="js/robinson.js" type="module"></script>
+</div>
+
+<div id="working_colors">
+  <canvas width="950" height="500";></canvas>
+</div>
+  <!-- Orthographic Globe -->
+  <!-- <script src="js/robinson.js" type="module"></script>  -->
+  <script src="js/working_colors.js" type="module"></script>
+</div>
+
+<div id="content">
+  <canvas width="950" height="500";></canvas>
+</div>
+  <!-- Orthographic Globe -->
+  <!-- <script src="js/robinson.js" type="module"></script>  -->
+  <script src="js/globe.js" type="module"></script>
+</div>
+
+<!-- 
+<div id="zoom_test">
+  <canvas width="950" height="500";></canvas>
+</div>  -->
+  <!-- Orthographic Globe -->
+  <!-- <script src="js/robinson.js" type="module"></script>  -->
+  <!--  <script src="js/zoom_test.js" type="module"></script>
+</div>  -->
+
+</body>
+</html>

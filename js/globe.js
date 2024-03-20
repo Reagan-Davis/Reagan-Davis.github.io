@@ -38,10 +38,12 @@ function update() {
 
   yaw += 0.15
 
+	let circle = d3.geoCircle().center([0, 0]).radius(0.5)
+
   // Indiana Jones 1
 
   // San Francisco
-	let circle = d3.geoCircle().center([-122.2204, 37.7203]).radius(0.5)
+	circle = d3.geoCircle().center([-122.2204, 37.7203]).radius(0.5)
 	context.beginPath();
 	context.strokeStyle = 'red';
 	geoGenerator(circle());
