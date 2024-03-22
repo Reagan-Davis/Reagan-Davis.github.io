@@ -10,6 +10,9 @@ var colorCountry = '#C30000'
 let land = {}
 let countries = {}
 
+var w = 700;
+var h = 600;
+
 // Where this is inputted in the html
 let context = d3.select('#zoom_test canvas')
   .node()
@@ -88,6 +91,31 @@ d3.json('USA.json')
 		countries = json;
 		updateUnitedStates();
 })
+
+function redraw(transform) {
+  context.clearRect(0, 0, width, height);
+  context.save();
+  if (transform) {
+    context.translate(transform.x, transform.y);
+    context.scale(transform.k, transform.k);
+  }
+  context.beginPath();
+  context.stroke(path2D);
+  context.restore();
+}
+
+d3.select(context.canvas).call(
+  d3
+    .zoom()
+    .scaleExtent([0.1, 8])
+    .on("zoom", function(evt) {
+      redraw(evt.transform);
+    })
+);
+
+path(topojson.mesh(countries)); // Draw the mesh to the path2D object
+redraw();
+
 
 // Append the SVG element.
 base.append(svg.node());

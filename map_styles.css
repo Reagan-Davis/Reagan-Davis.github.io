@@ -1,0 +1,12 @@
+.line {
+    stroke: black;
+    stroke-width: 5;
+  }
+  
+  .over {
+    opacity: 0.9;
+  }
+  
+  .selected {
+    stroke: red;
+  }
