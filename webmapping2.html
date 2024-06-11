@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4"></script>
 
-<div style="text-align:center;border-style:solid;" >
+<div style="text-align:center;" >
     <!-- <p>Render Test</p> -->
 
     <!-- Map SVG Holder -->
@@ -64,30 +64,20 @@
   }
 
 let mouseClick = function(d) {
-    d3.selectAll(".Country")
-      .transition()
-      .duration(250)
-      .ease(d3.easeCubic)
-      .style("opacity", 1)
-      .style("width", 5)
-      if (!d3.select(this).classed("selected") ){
-     d3.select(this).classed("selected", true);
-     d3.select(this)
-      .transition()
-      .duration(100)
+     if (!d3.select(this).classed("selected") ){
+   d3.select(this).classed("selected", true)
+	 d3.select(this).transition().ease(d3.easeCubic)
       .style("stroke", "black")
       .style("opacity", 1)
       .attr("fill", "#aaa")
-      .attr("stroke-width", 0.002*scaleFactor)
-     }else{
-        d3.select(this).classed("selected", false);
-        d3.select(this)
-      .transition()
-      .duration(100)
-      .style("opacity", .9)
+      .attr("stroke-width", 0.002*scaleFactor);
+  }else{
+   d3.select(this).classed("selected", false);
+   d3.select(this).transition().ease(d3.easeCubic)
+      .style("opacity", .5)
       .attr("fill", "#ddd")
-      .attr("stroke-width", 0.001*scaleFactor)
-     }
+      .attr("stroke-width", 0.001*scaleFactor);
+  }
 }
   
         // Draw the map
@@ -101,10 +91,23 @@ let mouseClick = function(d) {
             .style("opacity", .5)
             .attr("stroke", "black")
             .attr("stroke-width", 0.001*scaleFactor)
-      .on("mouseover", mouseOver )
-      .on("mouseleave", mouseLeave )
       .on("click", mouseClick )
+      //.on("mouseover", mouseOver )
+      //.on("mouseleave", mouseLeave )
       //.on("mouseup", mouseUp )
     
     })
+
+// ZOOMING!!!
+let zoom = d3.zoom()
+    .on("zoom", handleZoom)
+    .scaleExtent([1, 5])
+    .translateExtent([[0, 0], [width, height]]);
+
+function handleZoom (e) {
+    d3.select('svg')
+    .attr('transform', e.transform);
+}
+d3.select('svg')
+    .call(zoom);
 </script>
