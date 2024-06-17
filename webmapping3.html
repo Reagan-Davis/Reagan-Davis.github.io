@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v6.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4"></script>
+
+<div style="text-align:center;" >
+    <!-- <p>Render Test</p> -->
+
+    <!-- Map SVG Holder -->
+    <svg id="equal" width="1400" height="750"></svg>
+</div>
+
+<script>
+
+    // The svg
+    const svg = d3.select('#equal'),
+        width = +svg.attr("width"),
+        height = +svg.attr("height");
+    
+    const scaleFactor = (width / 2 / Math.PI)
+
+    // Map and projection
+    const path = d3.geoPath();
+    const projection = d3.geoRobinson()
+        .scale(scaleFactor)
+        .translate([width / 2, height / 2])
+        .rotate([-10, 0, 0]);
+    
+    // Load external data and boot
+    // 1985.json
+    d3.json("ne_10m_admin_0_countries.json").then( function(data) {
+
+let mouseOver = function(d) {
+  d3.select(this).classed("selected", false)
+    .transition()
+    .duration(100)
+    .style("opacity", .9)
+    .attr("stroke-width", 0.001*scaleFactor)
+}
+
+let mouseLeave = function(d) {
+  d3.select(this).classed("selected", false)
+    .transition()
+    .duration(100)
+    .style("opacity", .5)
+    .attr("fill", "#ddd")
+    .attr("stroke-width", 0.001*scaleFactor)
+}
+
+let mouseClick = function(d) {
+   if (!d3.select(this).classed("selected") ){
+ d3.select(this).classed("selected", true)
+ d3.select(this).transition().ease(d3.easeCubic)
+    .style("stroke", "black")
+    .style("opacity", 1)
+    .attr("fill", "#aaa")
+    .attr("stroke-width", 0.002*scaleFactor);
+}
+else{
+ d3.select(this).classed("selected", false);
+ d3.select(this).transition().ease(d3.easeCubic)
+    .style("opacity", .5)
+    .attr("stroke-width", 0.002*scaleFactor);
+}
+}
+  
+        // Draw the map
+        svg.append("g")
+            .selectAll("path")
+            .data(data.features)
+            .join("path")
+            .attr("fill", "#ddd")
+            .attr("d", path
+            .projection(projection))
+            .style("opacity", .5)
+            .attr("stroke", "black")
+            .attr("stroke-width", 0.001*scaleFactor)
+      .on("click", mouseClick )
+      .on("mouseover", mouseOver )
+      .on("mouseleave", mouseLeave )
+      //.on("mouseup", mouseUp )
+    
+    })
+
+// ZOOMING!!!
+let zoom = d3.zoom()
+    .on("zoom", handleZoom)
+    .scaleExtent([1, 5])
+    .translateExtent([[0, 0], [width, height]]);
+
+function handleZoom (e) {
+    d3.select('svg')
+    .attr('transform', e.transform);
+}
+d3.select('svg')
+    .call(zoom);
+</script>
