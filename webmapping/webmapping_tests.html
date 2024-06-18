@@ -16,11 +16,27 @@
       height: auto;
       background-color: #f0f0f0; /* Light gray background */
     }
+
+    .ocean {
+      fill: #bde2ff; /* Light blue color for ocean */
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #fff;
+      padding: 5px;
+      border: 1px solid #aaa;
+      pointer-events: none;
+      font-size: 12px;
+      display: none; /* Hidden by default */
+    }
   </style>
 </head>
 <body>
 
 <svg id="map-svg"></svg>
+
+<div class="tooltip" id="tooltip"></div>
 
 <script>
 // Dimensions of the SVG container
@@ -31,6 +47,12 @@ const height = window.innerHeight;
 const svg = d3.select("#map-svg")
   .attr("width", width)
   .attr("height", height);
+
+// Add a rectangle for ocean background
+svg.append("rect")
+  .attr("width", width)
+  .attr("height", height)
+  .attr("class", "ocean");
 
 // Define a Robinson projection
 const projection = d3.geoRobinson()
@@ -103,6 +125,12 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
     .attr("stroke-width", 0.2)
     // Add click event to toggle selection
     .on("click", function(event, d) {
+      // Show tooltip with country name
+      const tooltip = d3.select("#tooltip");
+      tooltip.style("display", "block")
+             .html(d.properties.name)
+             .style("left", (event.pageX + 10) + "px") // Adjust tooltip position
+             .style("top", (event.pageY - 20) + "px");
       // Check if the clicked country is already selected
       if (selectedCountry === d) {
         d3.select(this).attr("fill", "lightblue"); // Deselect if clicked again
@@ -119,11 +147,20 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
     // Add hover effects
     .on("mouseover", function(event, d) {
       if (selectedCountry !== d) {
+      // Hide tooltip on mouseout
         d3.select(this)
           .attr("fill", "orange"); // Change color on hover, unless selected
       }
+      else {
+      d3.select("#tooltip").style("display", "block")
+             .html(d.properties.name)
+             .style("left", (event.pageX + 10) + "px") // Adjust tooltip position
+             .style("top", (event.pageY - 20) + "px");
+      }
     })
     .on("mouseout", function(event, d) {
+      // Hide tooltip on mouseout
+      d3.select("#tooltip").style("display", "none");
       if (selectedCountry !== d) {
         d3.select(this)
           .attr("fill", "lightblue"); // Revert to original color on mouseout, unless selected
