@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orthographic Globe with D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script> <!-- Include TopoJSON library -->
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden; /* Hide scrollbars */
+      background-color: #f0f0f0;
+    }
+
+    svg {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .land {
+      fill: #222; /* Light blue color for land */
+      stroke: #fff; /* Gray color for country borders */
+      stroke-width: 0.5;
+    }
+
+    .ocean {
+      fill: #000; /* Light blue color for ocean */
+    }
+
+    .graticule {
+      fill: none;
+      stroke: #777; /* Dark gray color for graticule lines */
+      stroke-width: 0.2;
+    }
+  </style>
+</head>
+<body>
+  <svg id="globe"></svg>
+
+  <script>
+const width = window.innerWidth;
+const height = window.innerHeight;
+
+const svg = d3.select("#globe")
+  .attr("width", width)
+  .attr("height", height);
+
+// Append a circle for ocean background
+svg.append("circle")
+  .attr("cx", width / 2)
+  .attr("cy", height / 2)
+  .attr("r", width / 2 - 20) // Radius based on globe radius
+  .attr("class", "ocean");
+
+// Define pan limits
+const minLatitude = -85; // Minimum latitude (beyond which rotation stops)
+const maxLatitude = 85; // Maximum latitude (beyond which rotation stops)
+
+const projection = d3.geoOrthographic()
+  .translate([width / 2, height / 2])
+  .scale(width / 2 - 20)
+  .clipAngle(90) // Clip to a hemisphere
+  .rotate([0, 0]) // Initial rotation
+  .center([0, 0]) // Center the globe at the origin
+  .precision(0.1); // Increase precision for smoother rendering
+
+const path = d3.geoPath().projection(projection);
+
+
+
+// Load and display the World map
+d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(function(world) {
+  svg.append("path")
+    .datum({type: "Sphere"})
+    .attr("class", "sphere")
+    .attr("d", path);
+
+  // Render countries
+  svg.selectAll(".land")
+    .data(topojson.feature(world, world.objects.countries).features)
+    .enter().append("path")
+    .attr("class", "land")
+    .attr("d", path);
+  
+  // Render graticule (optional, for latitude and longitude lines)
+  svg.append("path")
+    .datum(d3.geoGraticule()())
+    .attr("class", "graticule")
+    .attr("d", path);
+});
+
+// Handle drag to rotate with pan limits
+svg.call(d3.drag()
+  .on("drag", (event) => {
+    const rotate = projection.rotate();
+    const dx = event.dx;
+    const dy = event.dy;
+
+    // Calculate new rotation angles
+    let newRotate = [rotate[0] + dx / 2, rotate[1] - dy / 2];
+
+    // Limit latitude rotation
+    newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1]));
+
+    projection.rotate(newRotate);
+
+    // Update paths
+    svg.selectAll("path.land").attr("d", path);
+    svg.selectAll("path.graticule").attr("d", path);
+  })
+);
+
+
+  </script>
+</body>
+</html>
