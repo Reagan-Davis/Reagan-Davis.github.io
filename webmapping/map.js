@@ -17,7 +17,7 @@ const path = d3.geoPath()
   .projection(projection);
 
 // Load and display the World map
-d3.json("ne_50m_land.json").then(function(world) {
+d3.json("ne_10m_admin_0_countries.json").then(function(world) {
   // Draw the countries
   svg.selectAll("path")
     .data(topojson.feature(world, world.objects.countries).features)

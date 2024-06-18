@@ -1,46 +1,136 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Webmapping Examples | Reagan Davis</title>
-
-<!-- Load d3.js -->
-<script src="https://d3js.org/d3.v6.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js Map Viewer with SVG</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script> <!-- Include TopoJSON library -->
+  <script src="https://cdn.jsdelivr.net/npm/d3-array@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4"></script>
+  <style>
+    /* CSS styles for the SVG map */
+    svg {
+      width: 100%;
+      height: auto;
+      background-color: #f0f0f0; /* Light gray background */
+    }
+  </style>
 </head>
-
 <body>
-    <div>
-        <!-- Map SVG Holder -->
-        <svg  style="text-align:center;outline:2px solid black;" id="svg_holder" width="1400" height="750"></svg>
-    </div>
-</body>
+
+<svg id="map-svg"></svg>
 
 <script>
-    // Hook D3 to SVG, use SVG dimensions
-    const svg = d3.select('#svg_holder'),
-        width = +svg.attr("width"),
-        height = +svg.attr("height");
+// Dimensions of the SVG container
+const width = window.innerWidth;
+const height = window.innerHeight;
 
+// Create an SVG element
+const svg = d3.select("#map-svg")
+  .attr("width", width)
+  .attr("height", height);
 
-			//Define path generator, using the Albers USA projection
-			const path = d3.geoPath()
-				 		 .projection(d3.geoAlbersUsa());
+// Define a Robinson projection
+const projection = d3.geoRobinson()
+  .scale(160) // Adjust scale as needed
+  .translate([width / 2, height / 2])
+  .precision(0.1); // Increase precision for smooth zooming
 
-//Load in GeoJSON data
-d3.json("USA.json").then( function(data) {
-  
-  //Bind data and create one path per GeoJSON feature
+// Define a path generator
+const path = d3.geoPath()
+  .projection(projection);
+
+// Variable to store the current zoom level
+let zoomLevel = 1;
+
+// Set up zoom behavior and constraints
+const zoom = d3.zoom()
+  .scaleExtent([1, 8]) // Minimum and maximum zoom scale
+  .extent([[0, 0], [width, height]]) // Zoomable area within SVG boundaries
+  .translateExtent([[0, 0], [width, height]]) // Panning boundaries within SVG
+  .on("zoom", zoomed);
+
+// Apply zoom behavior to the SVG
+svg.call(zoom);
+
+// Function to handle zoom events
+function zoomed(event) {
+  const { transform } = event;
+  zoomLevel = transform.k; // Update current zoom level
+
+  // Apply translation and scaling to SVG elements
   svg.selectAll("path")
-     .data(json.features)
-     .enter()
-     .append("path")
-     .attr("d", path);
+    .attr("transform", transform.toString());
 
+// Adjust path simplification based on zoom level
+const currentPrecision = 0.1 / transform.k; // Adjust precision inversely with zoom level
+path.projection(projection.precision(currentPrecision));
+
+// Dynamic stroke width based on zoom level
+const strokeWidth = 0.2 / transform.k; // Adjust stroke width inversely with zoom level
+svg.selectAll("path")
+  .attr("stroke-width", strokeWidth);
+
+  // Constrain panning and zooming within the specified bounds
+  const [[x0, y0], [x1, y1]] = bounds;
+  svg.selectAll("path")
+    .attr("d", path.projection(projection));
+
+  // Prevent zooming out beyond the minimum scale (1)
+  if (transform.k <= 1) {
+    svg.selectAll("path")
+      .attr("stroke-width", 0.5 / transform.k); // Adjust stroke width on zoom out
+  } else {
+    svg.selectAll("path")
+      .attr("stroke-width", 0.5 / transform.k); // Adjust stroke width based on zoom level
+  }
+}
+
+// Variable to store the currently selected country
+let selectedCountry = null;
+
+// Load and display the World map
+d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.json").then(function(world) {
+  // Draw the countries
+  svg.selectAll("path")
+    .data(topojson.feature(world, world.objects.countries).features)
+    .enter().append("path")
+    .attr("d", path)
+    .attr("fill", "lightblue")
+    .attr("stroke", "black")
+    .attr("stroke-width", 0.2)
+    // Add click event to toggle selection
+    .on("click", function(event, d) {
+      // Check if the clicked country is already selected
+      if (selectedCountry === d) {
+        d3.select(this).attr("fill", "lightblue"); // Deselect if clicked again
+        selectedCountry = null; // Reset selectedCountry variable
+      } else {
+        // Deselect currently selected country (if any)
+        svg.selectAll("path")
+          .attr("fill", function(country) {
+            return country === d ? "red" : "lightblue";
+          });
+        selectedCountry = d; // Set the clicked country as selected
+      }
+    })
+    // Add hover effects
+    .on("mouseover", function(event, d) {
+      if (selectedCountry !== d) {
+        d3.select(this)
+          .attr("fill", "orange"); // Change color on hover, unless selected
+      }
+    })
+    .on("mouseout", function(event, d) {
+      if (selectedCountry !== d) {
+        d3.select(this)
+          .attr("fill", "lightblue"); // Revert to original color on mouseout, unless selected
+      }
+    });
 });
 </script>
 
+</body>
 </html>
