@@ -113,6 +113,9 @@ svg.selectAll("path")
 // Variable to store the currently selected country
 let selectedCountry = null;
 
+      // Show tooltip with country name
+      const tooltip = d3.select("#tooltip");
+
 // Load and display the World map
 d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.json").then(function(world) {
   // Draw the countries
@@ -125,12 +128,6 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
     .attr("stroke-width", 0.2)
     // Add click event to toggle selection
     .on("click", function(event, d) {
-      // Show tooltip with country name
-      const tooltip = d3.select("#tooltip");
-      tooltip.style("display", "block")
-             .html(d.properties.name)
-             .style("left", (event.pageX + 10) + "px") // Adjust tooltip position
-             .style("top", (event.pageY - 20) + "px");
       // Check if the clicked country is already selected
       if (selectedCountry === d) {
         d3.select(this).attr("fill", "lightblue"); // Deselect if clicked again
@@ -151,20 +148,23 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
         d3.select(this)
           .attr("fill", "orange"); // Change color on hover, unless selected
       }
-      else {
-      d3.select("#tooltip").style("display", "block")
-             .html(d.properties.name)
-             .style("left", (event.pageX + 10) + "px") // Adjust tooltip position
-             .style("top", (event.pageY - 20) + "px");
-      }
     })
     .on("mouseout", function(event, d) {
       // Hide tooltip on mouseout
-      d3.select("#tooltip").style("display", "none");
       if (selectedCountry !== d) {
         d3.select(this)
           .attr("fill", "lightblue"); // Revert to original color on mouseout, unless selected
       }
+    })
+    .on("mousemove", function(event, d) {
+      // Show tooltip on mouse move
+      const tooltip = d3.select("#tooltip");
+      tooltip.style("display", "block")
+             .html(d.properties.name);
+      
+      // Position tooltip relative to mouse pointer
+      tooltip.style("left", (event.pageX + 5) + "px")
+             .style("top", (event.pageY - 10) + "px");
     });
 });
 </script>
