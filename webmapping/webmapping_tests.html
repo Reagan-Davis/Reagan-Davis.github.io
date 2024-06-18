@@ -77,23 +77,25 @@ const zoom = d3.zoom()
 // Apply zoom behavior to the SVG
 svg.call(zoom);
 
+// Create a container for paths
+const g = svg.append("g");
+
 // Function to handle zoom events
 function zoomed(event) {
   const { transform } = event;
   zoomLevel = transform.k; // Update current zoom level
 
-  // Apply translation and scaling to SVG elements
-  svg.selectAll("path")
-    .attr("transform", transform.toString());
+  // Apply translation and scaling to container element
+  g.attr("transform", transform);
 
-// Adjust path simplification based on zoom level
-const currentPrecision = 0.1 / transform.k; // Adjust precision inversely with zoom level
-path.projection(projection.precision(currentPrecision));
+  // Adjust path simplification based on zoom level
+  const currentPrecision = 0.1 / transform.k;
+  path.projection(projection.precision(currentPrecision));
 
-// Dynamic stroke width based on zoom level
-const strokeWidth = 0.2 / transform.k; // Adjust stroke width inversely with zoom level
-svg.selectAll("path")
-  .attr("stroke-width", strokeWidth);
+  // Dynamic stroke width based on zoom level
+  const strokeWidth = 0.2 / transform.k;
+  g.selectAll("path")
+    .attr("stroke-width", strokeWidth);
 
   // Constrain panning and zooming within the specified bounds
   const [[x0, y0], [x1, y1]] = bounds;
@@ -119,7 +121,7 @@ let selectedCountry = null;
 // Load and display the World map
 d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.json").then(function(world) {
   // Draw the countries
-  svg.selectAll("path")
+  g.selectAll("path")
     .data(topojson.feature(world, world.objects.countries).features)
     .enter().append("path")
     .attr("d", path)
@@ -151,6 +153,8 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
     })
     .on("mouseout", function(event, d) {
       // Hide tooltip on mouseout
+      const tooltip = d3.select("#tooltip");
+      tooltip.style("display", "none");
       if (selectedCountry !== d) {
         d3.select(this)
           .attr("fill", "lightblue"); // Revert to original color on mouseout, unless selected
@@ -167,6 +171,8 @@ d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.
              .style("top", (event.pageY - 10) + "px");
     });
 });
+
+
 </script>
 
 </body>
