@@ -68,8 +68,8 @@
       .attr("height", height);
 
     // Define pan limits
-    const minLatitude = -85; // Minimum latitude (beyond which rotation stops)
-    const maxLatitude = 85; // Maximum latitude (beyond which rotation stops)
+    const minLatitude = -80; // Minimum latitude (beyond which rotation stops)
+    const maxLatitude = 80; // Maximum latitude (beyond which rotation stops)
 
     let projection = d3.geoOrthographic()
       .translate([width / 2, height / 2])
@@ -99,18 +99,10 @@
         .attr("class", "land")
         .attr("d", path)
         .on("click", function(event, d) {
-          // Check if the clicked country is already selected
-          if (selectedCountry === d) {
-            d3.select(this).classed("selected", false); // Deselect if clicked again
-            selectedCountry = null; // Reset selectedCountry variable
-          } else {
-            // Deselect currently selected country (if any)
-            svg.selectAll(".land")
-              .classed("selected", function(country) {
-                return country === d;
-              });
-            selectedCountry = d; // Set the clicked country as selected
-          }
+          // Handle click event
+        })
+        .on("touchstart", function(event, d) {
+          // Handle touch event
         });
       
       // Render graticule (optional, for latitude and longitude lines)
@@ -120,42 +112,63 @@
         .attr("d", path);
     });
 
-    // Function to handle arrow key events
-    function handleArrowKeys(event) {
-      const key = event.key;
-      const rotate = projection.rotate();
-      let newRotate;
+    let rotateInterval = null; // Variable to store the rotation interval
+    let rotationSpeed = [0, 0]; // Initial rotation speed
 
+    // Function to start continuous rotation
+    function startRotation(speedX, speedY) {
+      stopRotation(); // Clear any existing interval first
+      rotationSpeed = [speedX, speedY];
+
+      rotateInterval = setInterval(function() {
+        const rotate = projection.rotate();
+        const newRotate = [rotate[0] + rotationSpeed[0], rotate[1] + rotationSpeed[1]];
+        newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1])); // Limit latitude
+        projection.rotate(newRotate);
+        redraw();
+      }, 20); // Adjust speed as needed
+    }
+
+    // Function to stop continuous rotation
+    function stopRotation() {
+      clearInterval(rotateInterval);
+      rotateInterval = null;
+    }
+
+    // Listen for keydown and keyup events for rotation
+    document.addEventListener("keydown", function(event) {
+      const key = event.key;
       switch (key) {
         case "ArrowLeft":
-          newRotate = [rotate[0] + 2, rotate[1]];
+          startRotation(2, 0);
           break;
         case "ArrowRight":
-          newRotate = [rotate[0] - 2, rotate[1]];
+          startRotation(-2, 0);
           break;
         case "ArrowUp":
-          newRotate = [rotate[0], rotate[1] - 2];
+          startRotation(0, -2);
           break;
         case "ArrowDown":
-          newRotate = [rotate[0], rotate[1] + 2];
+          startRotation(0, 2);
           break;
         default:
           return; // Exit if key is not an arrow key
       }
+    });
 
-      // Limit latitude rotation
-      newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1]));
-
-      projection.rotate(newRotate);
-
-      // Update paths
-      svg.selectAll("path.land").attr("d", path);
-      svg.selectAll("path.graticule").attr("d", path);
-      svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
-    }
-
-    // Listen for keydown events
-    document.addEventListener("keydown", handleArrowKeys);
+    document.addEventListener("keyup", function(event) {
+      const key = event.key;
+      switch (key) {
+        case "ArrowLeft":
+        case "ArrowRight":
+        case "ArrowUp":
+        case "ArrowDown":
+          stopRotation();
+          break;
+        default:
+          return; // Exit if key is not an arrow key
+      }
+    });
 
     // Function to zoom in
     function zoomIn() {
@@ -183,6 +196,20 @@
       svg.selectAll("path.graticule").attr("d", path);
       svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
     }
+
+    // Update dimensions and projection on window resize
+    window.addEventListener('resize', function() {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+
+      svg.attr("width", newWidth)
+         .attr("height", newHeight);
+
+      projection.translate([newWidth / 2, newHeight / 2])
+                .scale(newHeight / 2 - 20);
+
+      redraw(); // Redraw paths to reflect new dimensions
+    });
 
   </script>
 </body>
