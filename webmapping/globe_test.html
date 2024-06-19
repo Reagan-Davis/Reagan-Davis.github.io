@@ -24,10 +24,6 @@
       stroke-width: 0.5;
     }
 
-    .ocean {
-      fill: #000; /* Light blue color for ocean */
-    }
-
     .graticule {
       fill: none;
       stroke: #777; /* Dark gray color for graticule lines */
@@ -37,9 +33,30 @@
     .selected {
       fill: orange; /* Selected country color */
     }
+
+    .zoom-btn {
+      position: absolute;
+      top: 10px;
+      padding: 8px;
+      background-color: #ccc;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
+    #zoom-in {
+      left: 10px;
+    }
+
+    #zoom-out {
+      left: 80px;
+    }
   </style>
 </head>
 <body>
+  <button id="zoom-in" class="zoom-btn" onclick="zoomIn()">Zoom In</button>
+  <button id="zoom-out" class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
+  
   <svg id="globe"></svg>
 
   <script>
@@ -50,24 +67,17 @@
       .attr("width", width)
       .attr("height", height);
 
-    // Append a circle for ocean background
-    svg.append("circle")
-      .attr("cx", width / 2)
-      .attr("cy", height / 2)
-      .attr("r", width / 2 - 20) // Radius based on globe radius
-      .attr("class", "ocean");
-
     // Define pan limits
     const minLatitude = -85; // Minimum latitude (beyond which rotation stops)
     const maxLatitude = 85; // Maximum latitude (beyond which rotation stops)
 
-    const projection = d3.geoOrthographic()
+    let projection = d3.geoOrthographic()
       .translate([width / 2, height / 2])
-      .scale(width / 2 - 20)
+      .scale(height / 2 - 20)
       .clipAngle(90) // Clip to a hemisphere
       .rotate([0, 0]) // Initial rotation
       .center([0, 0]) // Center the globe at the origin
-      .precision(0.1); // Increase precision for smoother rendering
+      .precision(0.5); // Increase precision for smoother rendering
 
     const path = d3.geoPath().projection(projection);
 
@@ -75,6 +85,8 @@
 
     // Load and display the World map
     d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(function(world) {
+      
+      // Render the outer sphere (optional)
       svg.append("path")
         .datum({type: "Sphere"})
         .attr("class", "sphere")
@@ -108,26 +120,69 @@
         .attr("d", path);
     });
 
-    // Handle drag to rotate with pan limits
-    svg.call(d3.drag()
-      .on("drag", (event) => {
-        const rotate = projection.rotate();
-        const dx = event.dx;
-        const dy = event.dy;
+    // Function to handle arrow key events
+    function handleArrowKeys(event) {
+      const key = event.key;
+      const rotate = projection.rotate();
+      let newRotate;
 
-        // Calculate new rotation angles
-        let newRotate = [rotate[0] + dx / 2, rotate[1] - dy / 2];
+      switch (key) {
+        case "ArrowLeft":
+          newRotate = [rotate[0] + 2, rotate[1]];
+          break;
+        case "ArrowRight":
+          newRotate = [rotate[0] - 2, rotate[1]];
+          break;
+        case "ArrowUp":
+          newRotate = [rotate[0], rotate[1] - 2];
+          break;
+        case "ArrowDown":
+          newRotate = [rotate[0], rotate[1] + 2];
+          break;
+        default:
+          return; // Exit if key is not an arrow key
+      }
 
-        // Limit latitude rotation
-        newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1]));
+      // Limit latitude rotation
+      newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1]));
 
-        projection.rotate(newRotate);
+      projection.rotate(newRotate);
 
-        // Update paths
-        svg.selectAll("path.land").attr("d", path);
-        svg.selectAll("path.graticule").attr("d", path);
-      })
-    );
+      // Update paths
+      svg.selectAll("path.land").attr("d", path);
+      svg.selectAll("path.graticule").attr("d", path);
+      svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
+    }
+
+    // Listen for keydown events
+    document.addEventListener("keydown", handleArrowKeys);
+
+    // Function to zoom in
+    function zoomIn() {
+      const scale = projection.scale();
+      const newScale = scale * 1.2; // Increase scale by 20%
+      if (newScale <= width / 0.25 - 20) { // Limit zoom in to original scale or less
+        projection.scale(newScale);
+        redraw();
+      }
+    }
+
+    // Function to zoom out
+    function zoomOut() {
+      const scale = projection.scale();
+      const newScale = scale / 1.2; // Decrease scale by 20%
+      if (newScale >= 300) { // Limit zoom out to a minimum scale of 300
+        projection.scale(newScale);
+        redraw();
+      }
+    }
+
+    // Redraw function to update paths
+    function redraw() {
+      svg.selectAll("path.land").attr("d", path);
+      svg.selectAll("path.graticule").attr("d", path);
+      svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
+    }
 
   </script>
 </body>
