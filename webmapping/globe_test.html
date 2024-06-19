@@ -75,7 +75,7 @@
       .translate([width / 2, height / 2])
       .scale(height / 2 - 20)
       .clipAngle(90) // Clip to a hemisphere
-      .rotate([0, 0]) // Initial rotation
+      .rotate([-15, -40]) // Initial rotation
       .center([0, 0]) // Center the globe at the origin
       .precision(0.5); // Increase precision for smoother rendering
 
@@ -99,10 +99,32 @@
         .attr("class", "land")
         .attr("d", path)
         .on("click", function(event, d) {
-          // Handle click event
+          // Check if the clicked country is already selected
+          if (selectedCountry === d) {
+            d3.select(this).classed("selected", false); // Deselect if clicked again
+            selectedCountry = null; // Reset selectedCountry variable
+          } else {
+            // Deselect currently selected country (if any)
+            svg.selectAll(".land")
+              .classed("selected", function(country) {
+                return country === d;
+              });
+            selectedCountry = d; // Set the clicked country as selected
+          }
         })
         .on("touchstart", function(event, d) {
-          // Handle touch event
+          // Check if the clicked country is already selected
+          if (selectedCountry === d) {
+            d3.select(this).classed("selected", false); // Deselect if clicked again
+            selectedCountry = null; // Reset selectedCountry variable
+          } else {
+            // Deselect currently selected country (if any)
+            svg.selectAll(".land")
+              .classed("selected", function(country) {
+                return country === d;
+              });
+            selectedCountry = d; // Set the clicked country as selected
+          }
         });
       
       // Render graticule (optional, for latitude and longitude lines)
