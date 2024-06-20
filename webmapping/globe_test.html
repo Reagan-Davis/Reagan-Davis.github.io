@@ -73,11 +73,16 @@
 
     let projection = d3.geoOrthographic()
       .translate([width / 2, height / 2])
-      .scale(height / 2 - 20)
       .clipAngle(90) // Clip to a hemisphere
       .rotate([-15, -40]) // Initial rotation
       .center([0, 0]) // Center the globe at the origin
       .precision(0.5); // Increase precision for smoother rendering
+      if (width > height) {
+      projection.scale(height / 2 - 20)
+      }
+      else {
+      projection.scale(width / 2 - 20)
+      }
 
     const path = d3.geoPath().projection(projection);
 
@@ -227,8 +232,14 @@
       svg.attr("width", newWidth)
          .attr("height", newHeight);
 
+      if (width > height) {
       projection.translate([newWidth / 2, newHeight / 2])
-                .scale(newHeight / 2 - 20);
+                .scale(newHeight / 2 - 20)
+      }
+      else {
+        projection.translate([newWidth / 2, newHeight / 2])
+                .scale(newWidth / 2 - 20)
+      };
 
       redraw(); // Redraw paths to reflect new dimensions
     });
