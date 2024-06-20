@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Orthographic Globe with D3.js</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script> <!-- Include TopoJSON library -->
@@ -294,6 +294,11 @@
 
       redraw(); // Redraw paths to reflect new dimensions
     });
+
+// Prevent double-tap zoom on mobile devices
+svg.on("touchstart", function(event) {
+  event.preventDefault();
+});
 
   </script>
 </body>
