@@ -6,6 +6,7 @@
   <title>Orthographic Globe with D3.js</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script> <!-- Include TopoJSON library -->
+  <script src="https://unpkg.com/topojson-simplify@3"></script>
   <style>
     body {
       margin: 0;
@@ -44,6 +45,16 @@
       outline: none;
     }
 
+    .pan-btn {
+      position: absolute;
+      bottom: 10px;
+      padding: 8px;
+      background-color: #ccc;
+      cursor: pointer;
+      border: none;
+      outline: none;
+    }
+
     #zoom-in {
       left: 10px;
     }
@@ -51,11 +62,32 @@
     #zoom-out {
       left: 80px;
     }
+
+    #pan-left {
+      left: 10px;
+    }
+
+    #pan-right {
+      left: 74px;
+    }
+
+    #pan-up {
+      left: 45px;
+      bottom: 45px;
+    }
+
+    #pan-down {
+      left: 45px;
+    }
   </style>
 </head>
 <body>
   <button id="zoom-in" class="zoom-btn" onclick="zoomIn()">Zoom In</button>
   <button id="zoom-out" class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
+  <button id="pan-left" class="pan-btn" onclick="panLeft()">&#8592;</button>
+  <button id="pan-right" class="pan-btn" onclick="panRight()">&#8594;</button>
+  <button id="pan-up" class="pan-btn" onclick="panUp()">&#8593;</button>
+  <button id="pan-down" class="pan-btn" onclick="panDown()">&#8595;</button>
   
   <svg id="globe"></svg>
 
@@ -77,12 +109,12 @@
       .rotate([-15, -40]) // Initial rotation
       .center([0, 0]) // Center the globe at the origin
       .precision(0.5); // Increase precision for smoother rendering
-      if (width > height) {
-      projection.scale(height / 2 - 20)
-      }
-      else {
-      projection.scale(width / 2 - 20)
-      }
+
+    if (width > height) {
+      projection.scale(height / 2 - 20);
+    } else {
+      projection.scale(width / 2 - 20);
+    }
 
     const path = d3.geoPath().projection(projection);
 
@@ -197,10 +229,44 @@
     function zoomOut() {
       const scale = projection.scale();
       const newScale = scale / 1.2; // Decrease scale by 20%
-      if (newScale >= 300) { // Limit zoom out to a minimum scale of 300
+      if (newScale >= 250) { // Limit zoom out to a minimum scale of 300
         projection.scale(newScale);
         redraw();
       }
+    }
+
+    // Function to pan left
+    function panLeft() {
+      const rotate = projection.rotate();
+      const newRotate = [rotate[0] + 10, rotate[1]];
+      projection.rotate(newRotate);
+      redraw();
+    }
+
+    // Function to pan right
+    function panRight() {
+      const rotate = projection.rotate();
+      const newRotate = [rotate[0] - 10, rotate[1]];
+      projection.rotate(newRotate);
+      redraw();
+    }
+
+    // Function to pan up
+    function panUp() {
+      const rotate = projection.rotate();
+      const newRotate = [rotate[0], rotate[1] - 10];
+      newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1])); // Limit latitude
+      projection.rotate(newRotate);
+      redraw();
+    }
+
+    // Function to pan down
+    function panDown() {
+      const rotate = projection.rotate();
+      const newRotate = [rotate[0], rotate[1] + 10];
+      newRotate[1] = Math.max(minLatitude, Math.min(maxLatitude, newRotate[1])); // Limit latitude
+      projection.rotate(newRotate);
+      redraw();
     }
 
     // Redraw function to update paths
@@ -219,13 +285,12 @@
          .attr("height", newHeight);
 
       if (width > height) {
-      projection.translate([newWidth / 2, newHeight / 2])
-                .scale(newHeight / 2 - 20)
-      }
-      else {
         projection.translate([newWidth / 2, newHeight / 2])
-                .scale(newWidth / 2 - 20)
-      };
+                  .scale(newHeight / 2 - 20);
+      } else {
+        projection.translate([newWidth / 2, newHeight / 2])
+                  .scale(newWidth / 2 - 20);
+      }
 
       redraw(); // Redraw paths to reflect new dimensions
     });
