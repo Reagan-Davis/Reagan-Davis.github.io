@@ -37,7 +37,7 @@
 
     .zoom-btn {
       position: absolute;
-      top: 10px;
+      bottom: 10px;
       padding: 8px;
       background-color: #ccc;
       cursor: pointer;
@@ -65,23 +65,29 @@
 
     #pan-left {
       left: 10px;
+      bottom: 45px;
     }
 
     #pan-right {
       left: 74px;
+      bottom: 45px;
     }
 
     #pan-up {
       left: 45px;
-      bottom: 45px;
+      bottom: 80px;
     }
 
     #pan-down {
       left: 45px;
+      bottom: 45px;
     }
   </style>
 </head>
 <body>
+    <input type="range" id="year-slider" min="1950" max="2020" value="2000" step="1">
+    <input type="text" id="year-input" class="year-input" value="2000">
+
   <button id="zoom-in" class="zoom-btn" onclick="zoomIn()">Zoom In</button>
   <button id="zoom-out" class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
   <button id="pan-left" class="pan-btn" onclick="panLeft()">&#8592;</button>
@@ -117,6 +123,20 @@
     }
 
     const path = d3.geoPath().projection(projection);
+
+// Function to change the displayed year based on slider input
+function changeYearFromSlider() {
+  const year = +document.getElementById("year-slider").value;
+  updateMap(year);
+  document.getElementById("year-input").value = year; // Update text input
+}
+
+// Function to change the displayed year based on text input
+function changeYearFromInput() {
+  const year = +document.getElementById("year-input").value;
+  updateMap(year);
+  document.getElementById("year-slider").value = year; // Update slider
+}
 
     let selectedCountry = null; // Variable to store the currently selected country
 
@@ -269,13 +289,6 @@
       redraw();
     }
 
-    // Redraw function to update paths
-    function redraw() {
-      svg.selectAll("path.land").attr("d", path);
-      svg.selectAll("path.graticule").attr("d", path);
-      svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
-    }
-
     // Update dimensions and projection on window resize
     window.addEventListener('resize', function() {
       const newWidth = window.innerWidth;
@@ -295,11 +308,40 @@
       redraw(); // Redraw paths to reflect new dimensions
     });
 
-// Prevent double-tap zoom on mobile devices
-svg.on("touchstart", function(event) {
-  event.preventDefault();
-});
+    // Event listener for slider input
+    document.getElementById("year-slider").addEventListener("input", changeYearFromSlider);
 
+    // Event listener for text input change
+    document.getElementById("year-input").addEventListener("change", changeYearFromInput);
+
+    //// Function to overlay on the map GeoJSON data for a given year
+    //function updateMap(year) {
+    //  // Load GeoJSON data for the selected year
+    //  //d3.json(`data/${year}.geojson`).then(function(data) {
+    //  d3.json("USA.json").then(function(dataYear) {
+    //    // Remove existing map elements
+    //    //svg.selectAll("path").remove(); FIX THIS
+
+    //    // Draw new map elements
+    //    svg.selectAll("path")
+    //      .data(dataYear.features)
+    //      .enter().append("path")
+    //      .attr("d", path)
+    //      .attr("fill", "red")
+    //      .attr("stroke", "green")
+    //      .attr("stroke-width", 0.5);
+    //  }).catch(function(error) {
+    //    console.error("Error loading GeoJSON data:", error);
+    //  });
+    //}
+
+    // Redraw function to update paths
+    function redraw() {
+      svg.selectAll("path.land").attr("d", path);
+      svg.selectAll("path.graticule").attr("d", path);
+      svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
+      svg.selectAll("path.dataYear").attr("d", path); 
+    }
   </script>
 </body>
 </html>
