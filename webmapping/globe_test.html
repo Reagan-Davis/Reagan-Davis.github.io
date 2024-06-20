@@ -116,20 +116,6 @@
               });
             selectedCountry = d; // Set the clicked country as selected
           }
-        })
-        .on("touchstart", function(event, d) {
-          // Check if the clicked country is already selected
-          if (selectedCountry === d) {
-            d3.select(this).classed("selected", false); // Deselect if clicked again
-            selectedCountry = null; // Reset selectedCountry variable
-          } else {
-            // Deselect currently selected country (if any)
-            svg.selectAll(".land")
-              .classed("selected", function(country) {
-                return country === d;
-              });
-            selectedCountry = d; // Set the clicked country as selected
-          }
         });
       
       // Render graticule (optional, for latitude and longitude lines)
