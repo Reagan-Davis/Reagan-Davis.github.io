@@ -347,25 +347,6 @@ function changeYearFromInput() {
       svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
       svg.selectAll("path.dataYear").attr("d", path); 
     }
-
-    // Add zoom and pan interaction
-    const zoom = d3.zoom()
-      .scaleExtent([0.5, 8]) // Set the zoom scale limits
-      .on("zoom", (event) => {
-        const transform = event.transform;
-        const scale = transform.k;
-        projection.scale((height / 2 - 20) * scale);
-        const [x, y] = [transform.x - width / 2, transform.y - height / 2];
-        const rotate = projection.rotate();
-        const newRotate = [rotate[0] + x / 8, rotate[1] - y / 8];
-        projection.rotate(newRotate);
-        redraw();
-      });
-
-    svg.call(zoom);
-
-    // Disable double-click zoom
-    svg.on("dblclick.zoom", null);
   </script>
 </body>
 </html>
