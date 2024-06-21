@@ -7,6 +7,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script> <!-- Include TopoJSON library -->
   <script src="https://unpkg.com/topojson-simplify@3"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplify-js/1.2.4/simplify.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -33,6 +34,9 @@
 
     .selected {
       fill: orange; /* Selected country color */
+      stroke: #fff;
+      stroke-width: 0.5;
+      fill-opacity: 90%;
     }
 
     .zoom-btn {
@@ -94,6 +98,7 @@
   <button id="pan-right" class="pan-btn" onclick="panRight()">&#8594;</button>
   <button id="pan-up" class="pan-btn" onclick="panUp()">&#8593;</button>
   <button id="pan-down" class="pan-btn" onclick="panDown()">&#8595;</button>
+  <button id="center-selection" class="zoom-btn">Center on Selection</button>
   
   <svg id="globe"></svg>
 
@@ -342,6 +347,25 @@ function changeYearFromInput() {
       svg.selectAll("path.sphere").attr("d", path); // Update sphere path if needed
       svg.selectAll("path.dataYear").attr("d", path); 
     }
+
+    // Add zoom and pan interaction
+    const zoom = d3.zoom()
+      .scaleExtent([0.5, 8]) // Set the zoom scale limits
+      .on("zoom", (event) => {
+        const transform = event.transform;
+        const scale = transform.k;
+        projection.scale((height / 2 - 20) * scale);
+        const [x, y] = [transform.x - width / 2, transform.y - height / 2];
+        const rotate = projection.rotate();
+        const newRotate = [rotate[0] + x / 8, rotate[1] - y / 8];
+        projection.rotate(newRotate);
+        redraw();
+      });
+
+    svg.call(zoom);
+
+    // Disable double-click zoom
+    svg.on("dblclick.zoom", null);
   </script>
 </body>
 </html>
