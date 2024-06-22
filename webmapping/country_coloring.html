@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3 World Map with Conditional Dashed Borders</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <style>
+    .country {
+      stroke: #000;
+      stroke-width: 0.2px;
+    }
+    .dashed-border {
+      stroke: red;
+      stroke-width: 0.25px;
+      stroke-dasharray: 4,2;
+      fill: none;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Dimensions for the SVG container
+    const width = 960;
+    const height = 600;
+
+    // Create an SVG container
+    const svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    // Define a projection and path generator
+    const projection = d3.geoNaturalEarth1()
+      .scale(167)
+      .translate([width / 2, height / 2]);
+
+    const path = d3.geoPath().projection(projection);
+
+    // Define a color scale for groups
+    const colors = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Load and process the world map data
+    d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(world => {
+      const countries = topojson.feature(world, world.objects.countries).features;
+      const neighbors = topojson.neighbors(world.objects.countries.geometries);
+
+      // Assign each country a group based on its neighbors
+      countries.forEach((country, i) => {
+        country.group = d3.min(neighbors[i].map(j => countries[j].group)) || i;
+        neighbors[i].forEach(j => {
+          if (countries[j].group === undefined) {
+            countries[j].group = country.group;
+          }
+        });
+      });
+
+      // Draw the countries
+      svg.selectAll(".country")
+        .data(countries)
+        .enter().append("path")
+        .attr("class", "country")
+        .attr("d", path)
+        .attr("fill", d => colors(d.group));
+
+      // Draw the borders between countries
+      svg.append("path")
+        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b))
+        .attr("class", "dashed-border")
+        .attr("d", path);
+
+      // Draw the dashed borders between countries of different groups
+      svg.append("path")
+        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && countries[a.index].group !== countries[b.index].group))
+        .attr("class", "dashed-border")
+        .attr("d", path);
+    });
+  </script>
+</body>
+</html>
