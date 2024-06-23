@@ -55,17 +55,21 @@
     // Load and process the world map data
     d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(world => {
       const countries = topojson.feature(world, world.objects.countries).features;
-      const neighbors = topojson.neighbors(world.objects.countries.geometries);
 
-      // Assign each country a group based on its neighbors
-      countries.forEach((country, i) => {
-        country.group = d3.min(neighbors[i].map(j => countries[j].group)) || i;
-        neighbors[i].forEach(j => {
-          if (countries[j].group === undefined) {
-            countries[j].group = country.group;
-          }
-        });
+      // Assign each country a group based on its ID range
+      countries.forEach(country => {
+        const id = parseInt(country.id); // Convert ID to integer if it's not already
+        if (id < 255) {
+          country.group = "Group 1"; // Example range condition
+        } else if (id < 550) {
+          country.group = "Group 2";
+        } else {
+          country.group = "Group 3";
+        }
       });
+
+      // Define the domain of the color scale based on groups
+      colors.domain(["Group 1", "Group 2", "Group 3"]);
 
       // Draw the countries
       svg.selectAll(".country")
@@ -92,7 +96,13 @@
         .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && countries[a.index].group !== countries[b.index].group))
         .attr("class", "dashed-border")
         .attr("d", path);
-    });
+
+// Debugging: Output some info to console
+console.log("Countries data:", countries);
+console.log("Mesh data:", mesh);
+}).catch(error => {
+console.error("Error loading data:", error);
+});
   </script>
 </body>
 </html>
