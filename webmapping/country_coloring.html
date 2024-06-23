@@ -10,6 +10,7 @@
     .country {
       stroke: #000;
       stroke-width: 0px;
+      transition: fill-opacity 0.2s, stroke-width 0.2s;
     }
     .coastline-border {
       stroke: black;
@@ -26,6 +27,15 @@
       stroke-width: 0.25px;
       stroke-dasharray: 2,1;
       fill: none;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
     }
   </style>
 </head>
@@ -48,26 +58,23 @@
 
     const path = d3.geoPath().projection(projection);
 
-    // Sample color data integrated directly into the code
-    const colorData = [
-      { id: "004", r: 255, g: 0, b: 0 },
-      { id: "012", r: 0, g: 255, b: 0 },
-      { id: "434", r: 0, g: 255, b: 0 },
-      { id: "504", r: 0, g: 255, b: 0 },
-      { id: "-99", r: 0, g: 0, b: 255 }
-      // Add more color data as needed
-    ];
+    // Create a tooltip element
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip");
 
-    // Create a mapping from ID to RGB color
-    const colorMap = {};
-    colorData.forEach(d => {
-      const color = `rgb(${d.r},${d.g},${d.b})`;
-      colorMap[d.id] = color;
-    });
-
-    // Load and process the world map data
-    d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json").then(world => {
+    // Load and process the world map data and the color data
+    Promise.all([
+      d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json"),
+      d3.csv("color.csv")
+    ]).then(([world, colorData]) => {
       const countries = topojson.feature(world, world.objects.countries).features;
+
+      // Create a mapping from ID to RGB color
+      const colorMap = {};
+      colorData.forEach(d => {
+        const color = `rgb(${d.r},${d.g},${d.b})`;
+        colorMap[d.id] = color;
+      });
 
       // Draw the countries
       svg.selectAll(".country")
@@ -75,13 +82,37 @@
         .enter().append("path")
         .attr("class", "country")
         .attr("d", path)
-        .attr("fill", d => colorMap[d.id] || "#ccc"); // Default to grey if no color found
+        .attr("fill", d => colorMap[d.id] || "#ccc") // Default to grey if no color found
+        .on("mouseover", function(event, d) {
+          const hoveredColor = colorMap[d.id];
 
-     // // Draw the borders between all countries
-     // svg.append("path")
-     //   .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b))
-     //   .attr("class", "country-border")
-     //   .attr("d", path);
+          // Highlight the hovered country
+          d3.select(this)
+            .attr("stroke-width", 1)
+            .attr("fill-opacity", 0.5);
+
+          // Highlight countries with the same color
+          svg.selectAll(".country")
+            .filter(c => colorMap[c.id] === hoveredColor && c.id !== d.id)
+            .attr("fill-opacity", 0.75);
+
+          tooltip.style("opacity", 1)
+                 .html(`ID: ${d.id}`)
+                 .style("left", (event.pageX + 5) + "px")
+                 .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(event, d) {
+          // Remove the highlight
+          d3.select(this)
+            .attr("stroke-width", 0)
+            .attr("fill-opacity", 1);
+
+          // Remove the highlight from countries with the same color
+          svg.selectAll(".country")
+            .attr("fill-opacity", 1);
+
+          tooltip.style("opacity", 0);
+        });
 
       // Draw the borders of coastlines
       svg.append("path")
