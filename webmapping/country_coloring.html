@@ -9,7 +9,18 @@
   <style>
     .country {
       stroke: #000;
+      stroke-width: 0px;
+    }
+    .coastline-border {
+      stroke: black;
+      stroke-width: 0.25px;
+      fill: none;
+    }
+    .country-border {
+      stroke: black;
       stroke-width: 0.2px;
+      stroke-dasharray: 2,1;
+      fill: none;
     }
     .dashed-border {
       stroke: red;
@@ -66,14 +77,20 @@
       // Draw the borders between countries
       svg.append("path")
         .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b))
-        .attr("class", "dashed-border")
+        .attr("class", "country-border")
+        .attr("d", path);
+      
+      // Draw the borders of coastlines
+      svg.append("path")
+        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a == b))
+        .attr("class", "coastline-border")
         .attr("d", path);
 
-      // Draw the dashed borders between countries of different groups
-      svg.append("path")
-        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && countries[a.index].group !== countries[b.index].group))
-        .attr("class", "dashed-border")
-        .attr("d", path);
+      //// Draw the dashed borders between countries of different groups
+      //svg.append("path")
+      //  .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && countries[a.index].group !== countries[b.index].group))
+      //  .attr("class", "dashed-border")
+      //  .attr("d", path);
     });
   </script>
 </body>
