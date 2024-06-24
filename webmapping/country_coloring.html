@@ -6,7 +6,11 @@
   <title>D3 World Map with Conditional Dashed Borders</title>
   <script src="https://d3js.org/d3.v6.min.js"></script>
   <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-simplify@3"></script>
   <style>
+    body {
+      overflow: hidden; /* Hide scrollbars */
+    }
     .country {
       stroke: #000;
       stroke-width: 0px;
@@ -14,12 +18,12 @@
     }
     .coastline-border {
       stroke: black;
-      stroke-width: 0.25px;
+      stroke-width: 0.35px;
       fill: none;
     }
     .country-border {
       stroke: black;
-      stroke-width: 0.2px;
+      stroke-width: 0.3px;
       fill: none;
     }
     .dashed-border {
@@ -37,37 +41,73 @@
       opacity: 0;
       transition: opacity 0.2s;
     }
+    .globe-border {
+      stroke: black;
+      stroke-width: 1px;
+      fill: none;
+    }
   </style>
 </head>
 <body>
+  <button onclick="toggleFills()">Toggle Fills to White</button>
+  <button onclick="updateProjection('geoNaturalEarth1')">Natural Earth</button>
+  <button onclick="updateProjection('geoEquirectangular')">Equirectangular</button>
+  <button onclick="updateProjection('geoOrthographic')">Orthographic</button>
+  <button onclick="updateProjection('geoAzimuthalEqualArea')">Azimuthal Equal Area</button>
+  <div>
+    <input type="range" id="simplifySlider" min="0" max="0.05" step="0.001" value="0">
+    <label for="simplifySlider">Simplify Factor</label>
+  </div>
   <script>
     // Dimensions for the SVG container
-    const width = 960;
-    const height = 600;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     // Create an SVG container
     const svg = d3.select("body").append("svg")
       .attr("width", width)
       .attr("height", height);
 
-    // Define a projection and path generator
-    const projection = d3.geoNaturalEarth1()
-      .scale(167)
+    let projection = d3.geoNaturalEarth1()
       .translate([width / 2, height / 2])
       .rotate([-11.5,0]);
 
-    const path = d3.geoPath().projection(projection);
+    if (width > height) {
+      projection.scale(height / 3 - 20);
+    } else {
+      projection.scale(width / 3 - 20);
+    }
+
+    let path = d3.geoPath().projection(projection);
 
     // Create a tooltip element
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip");
 
+    let originalColors = {};
+    let worldData, colorData;
+    let whiteToggled = false;
+
     // Load and process the world map data and the color data
     Promise.all([
-      d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-110m.v1.json"),
+      d3.json("https://raw.githubusercontent.com/d3/d3.github.com/master/world-50m.v1.json"),
       d3.csv("color.csv")
-    ]).then(([world, colorData]) => {
-      const countries = topojson.feature(world, world.objects.countries).features;
+    ]).then(([world, color]) => {
+      worldData = world;
+      colorData = color;
+      drawMap();
+      createSlider();
+    }).catch(error => {
+      console.error("Error loading data:", error);
+    });
+
+    function drawMap(simplifyFactor = 0) {
+      const countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+      // Simplify the topology
+      const simplifiedWorldData = topojson.presimplify(worldData);
+      const simplifiedTopology = topojson.simplify(simplifiedWorldData, simplifyFactor);
+      const simplifiedCountries = topojson.feature(simplifiedTopology, simplifiedTopology.objects.countries).features;
 
       // Create a mapping from ID to RGB color
       const colorMap = {};
@@ -76,13 +116,22 @@
         colorMap[d.id] = color;
       });
 
+      // Clear the SVG before redrawing
+      svg.selectAll("*").remove();
+
+      // Draw the globe boundary
+      drawGlobeBoundary();
+
       // Draw the countries
       svg.selectAll(".country")
-        .data(countries)
+        .data(simplifiedCountries)
         .enter().append("path")
         .attr("class", "country")
         .attr("d", path)
-        .attr("fill", d => colorMap[d.id] || "#ccc") // Default to grey if no color found
+        .attr("fill", d => {
+          originalColors[d.id] = colorMap[d.id] || "#ccc";
+          return whiteToggled ? "#fff" : originalColors[d.id];
+        })
         .on("mouseover", function(event, d) {
           const hoveredColor = colorMap[d.id];
 
@@ -116,28 +165,89 @@
 
       // Draw the borders of coastlines
       svg.append("path")
-        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a === b))
+        .datum(topojson.mesh(simplifiedTopology, simplifiedTopology.objects.countries, (a, b) => a === b))
         .attr("class", "coastline-border")
         .attr("d", path);
 
       // Draw the dashed borders between countries of same groups
       svg.append("path")
-        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && colorMap[a.id] !== colorMap[b.id]))
+        .datum(topojson.mesh(simplifiedTopology, simplifiedTopology.objects.countries, (a, b) => a !== b && colorMap[a.id] !== colorMap[b.id]))
         .attr("class", "country-border")
         .attr("d", path);
 
       // Draw the dashed borders between countries of different groups
       svg.append("path")
-        .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b && colorMap[a.id] == colorMap[b.id]))
+        .datum(topojson.mesh(simplifiedTopology, simplifiedTopology.objects.countries, (a, b) => a !== b && colorMap[a.id] == colorMap[b.id]))
         .attr("class", "dashed-border")
         .attr("d", path);
 
       // Debugging: Output some info to console
       console.log("Countries data:", countries);
       console.log("Color mapping:", colorMap);
-    }).catch(error => {
-      console.error("Error loading data:", error);
-    });
+    }
+
+    function drawGlobeBoundary() {
+      if (projection.clipAngle) {
+        svg.append("path")
+          .datum({type: "Sphere"})
+          .attr("class", "globe-border")
+          .attr("d", path);
+      } else {
+        const radius = projection.scale();
+        svg.append("circle")
+          .attr("class", "globe-border")
+          .attr("cx", width / 2)
+          .attr("cy", height / 2)
+          .attr("r", radius);
+      }
+    }
+
+    function toggleFills() {
+      whiteToggled = !whiteToggled;
+      svg.selectAll(".country")
+        .attr("fill", d => whiteToggled ? "#fff" : originalColors[d.id]);
+    }
+
+    function updateProjection(projectionType) {
+      switch(projectionType) {
+        case 'geoNaturalEarth1':
+          projection = d3.geoNaturalEarth1()
+          .rotate([-11.5,0]).translate([width / 2, height / 2]);
+        if (width > height) {
+          projection.scale(height / 3 - 20);
+        } else {
+          projection.scale(width / 3 - 20);
+        }
+          break;
+        case 'geoEquirectangular':
+          projection = d3.geoEquirectangular()
+          .rotate([-11.5,0]).scale(150).translate([width / 2, height / 2]);
+        if (width > height) {
+          projection.scale(height / 4 - 20);
+        } else {
+          projection.scale(width / 4 - 20);
+        }
+          break;
+        case 'geoOrthographic':
+          projection = d3.geoOrthographic()
+          .rotate([-11.5,0]).scale(240).translate([width / 2, height / 2]);
+          break;
+        case 'geoAzimuthalEqualArea':
+          projection = d3.geoAzimuthalEqualArea()
+          .rotate([-11.5,0]).translate([width / 2, height / 2]);
+          break;
+      }
+      path = d3.geoPath().projection(projection);
+      drawMap();
+    }
+
+    function createSlider() {
+      const slider = document.getElementById('simplifySlider');
+      slider.addEventListener('input', () => {
+        const simplifyFactor = parseFloat(slider.value);
+        drawMap(simplifyFactor);
+      });
+    }
   </script>
 </body>
 </html>
