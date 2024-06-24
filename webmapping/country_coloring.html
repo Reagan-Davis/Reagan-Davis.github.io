@@ -16,21 +16,25 @@
       stroke-width: 0px;
       transition: fill-opacity 0.2s, stroke-width 0.2s;
     }
+    .coastline-border, .country-border, .dashed-border, .highlight-border {
+      fill: none;
+    }
     .coastline-border {
       stroke: black;
       stroke-width: 0.35px;
-      fill: none;
     }
     .country-border {
       stroke: black;
       stroke-width: 0.3px;
-      fill: none;
     }
     .dashed-border {
       stroke: black;
       stroke-width: 0.25px;
-      stroke-dasharray: 2,1;
-      fill: none;
+      stroke-dasharray: 2, 1;
+    }
+    .highlight-border {
+      stroke: orange;
+      stroke-width: 2px;
     }
     .tooltip {
       position: absolute;
@@ -70,7 +74,7 @@
 
     let projection = d3.geoNaturalEarth1()
       .translate([width / 2, height / 2])
-      .rotate([-11.5,0]);
+      .rotate([-11.5, 0]);
 
     if (width > height) {
       projection.scale(height / 3 - 20);
@@ -122,6 +126,9 @@
       // Draw the globe boundary
       drawGlobeBoundary();
 
+      // Store country paths
+      let countryPaths = {};
+
       // Draw the countries
       svg.selectAll(".country")
         .data(simplifiedCountries)
@@ -131,6 +138,9 @@
         .attr("fill", d => {
           originalColors[d.id] = colorMap[d.id] || "#ccc";
           return whiteToggled ? "#fff" : originalColors[d.id];
+        })
+        .each(function(d) {
+          countryPaths[d.id] = this;
         })
         .on("mouseover", function(event, d) {
           const hoveredColor = colorMap[d.id];
@@ -146,9 +156,9 @@
             .attr("fill-opacity", 0.75);
 
           tooltip.style("opacity", 1)
-                 .html(`ID: ${d.id}`)
-                 .style("left", (event.pageX + 5) + "px")
-                 .style("top", (event.pageY - 28) + "px");
+            .html(`ID: ${d.id}`)
+            .style("left", (event.pageX + 5) + "px")
+            .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", function(event, d) {
           // Remove the highlight
@@ -161,6 +171,24 @@
             .attr("fill-opacity", 1);
 
           tooltip.style("opacity", 0);
+        })
+        .on("click", function(event, d) {
+          const clickedColor = colorMap[d.id];
+
+          // Remove any existing highlight borders
+          svg.selectAll(".highlight-border").remove();
+
+          // Get countries with the same color
+          const sameColorCountries = simplifiedCountries.filter(c => colorMap[c.id] === clickedColor);
+
+          // Create a combined path for the highlight
+          const combinedPath = svg.append("path")
+            .datum({
+              type: "FeatureCollection",
+              features: sameColorCountries
+            })
+            .attr("class", "highlight-border")
+            .attr("d", path);
         });
 
       // Draw the borders of coastlines
@@ -189,7 +217,7 @@
     function drawGlobeBoundary() {
       if (projection.clipAngle) {
         svg.append("path")
-          .datum({type: "Sphere"})
+          .datum({ type: "Sphere" })
           .attr("class", "globe-border")
           .attr("d", path);
       } else {
@@ -209,44 +237,59 @@
     }
 
     function updateProjection(projectionType) {
-      switch(projectionType) {
+      switch (projectionType) {
         case 'geoNaturalEarth1':
           projection = d3.geoNaturalEarth1()
-          .rotate([-11.5,0]).translate([width / 2, height / 2]);
-        if (width > height) {
-          projection.scale(height / 3 - 20);
-        } else {
-          projection.scale(width / 3 - 20);
-        }
+            .rotate([-11.5, 0]).translate([width / 2, height / 2]);
+          if (width > height) {
+            projection.scale(height / 3 - 20);
+          } else {
+            projection.scale(width / 3 - 20);
+          }
           break;
         case 'geoEquirectangular':
           projection = d3.geoEquirectangular()
-          .rotate([-11.5,0]).scale(150).translate([width / 2, height / 2]);
-        if (width > height) {
-          projection.scale(height / 4 - 20);
-        } else {
-          projection.scale(width / 4 - 20);
-        }
+            .rotate([-11.5, 0]).translate([width / 2, height / 2]);
+          if (width > height) {
+            projection.scale(height / 3 - 20);
+          } else {
+            projection.scale(width / 3 - 20);
+          }
           break;
         case 'geoOrthographic':
           projection = d3.geoOrthographic()
-          .rotate([-11.5,0]).scale(240).translate([width / 2, height / 2]);
+            .rotate([-11.5, 0]).translate([width / 2, height / 2]);
+          if (width > height) {
+            projection.scale(height / 3 - 20);
+          } else {
+            projection.scale(width / 3 - 20);
+          }
           break;
         case 'geoAzimuthalEqualArea':
           projection = d3.geoAzimuthalEqualArea()
-          .rotate([-11.5,0]).translate([width / 2, height / 2]);
+            .rotate([-11.5, 0]).translate([width / 2, height / 2]);
+          if (width > height) {
+            projection.scale(height / 3 - 20);
+          } else {
+            projection.scale(width / 3 - 20);
+          }
+          break;
+        default:
           break;
       }
+
       path = d3.geoPath().projection(projection);
-      drawMap();
+
+      // Redraw the map with the new projection
+      drawMap(d3.select("#simplifySlider").property("value"));
     }
 
     function createSlider() {
-      const slider = document.getElementById('simplifySlider');
-      slider.addEventListener('input', () => {
-        const simplifyFactor = parseFloat(slider.value);
-        drawMap(simplifyFactor);
-      });
+      d3.select("#simplifySlider")
+        .on("input", function() {
+          const value = +this.value;
+          drawMap(value);
+        });
     }
   </script>
 </body>
