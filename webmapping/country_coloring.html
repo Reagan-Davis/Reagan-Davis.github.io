@@ -78,6 +78,14 @@
       .attr("width", width)
       .attr("height", height);
 
+    // Define zoom behavior
+    const zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .on("zoom", zoomed);
+
+    // Attach zoom behavior to the SVG
+    svg.call(zoom);
+
     let projection = d3.geoNaturalEarth1()
       .translate([width / 2, height / 2])
       .rotate([-11.5, 0]);
@@ -305,6 +313,13 @@
           const value = +this.value;
           drawMap(value);
         });
+    }
+
+    function zoomed(event) {
+      const { transform } = event;
+      svg.selectAll('path')  // Select all path elements (countries, borders)
+        .attr('transform', transform)
+        .attr('stroke-width', 1 / transform.k);  // Adjust stroke width
     }
   </script>
 </body>
