@@ -142,13 +142,15 @@
         .attr("class", "country")
         .attr("d", path)
         .attr("fill", d => {
-          originalColors[d.id] = colorMap[d.id] || "#ccc";
-          return whiteToggled ? "#fff" : originalColors[d.id];
+          const fillColor = colorMap[d.id] || "#ccc"; // Default to grey if no color assigned
+          originalColors[d.id] = fillColor;
+          return whiteToggled ? "#fff" : fillColor;
         })
         .each(function(d) {
           countryPaths[d.id] = this;
         })
         .on("mouseover", function(event, d) {
+
           const hoveredColor = colorMap[d.id];
 
           // Highlight the hovered country
@@ -156,29 +158,36 @@
             .attr("stroke-width", 1)
             .attr("fill-opacity", 0.5);
 
-          // Highlight countries with the same color
-          svg.selectAll(".country")
-            .filter(c => colorMap[c.id] === hoveredColor && c.id !== d.id)
-            .attr("fill-opacity", 0.75);
-
           tooltip.style("opacity", 1)
             .html(`ID: ${d.id} <br> Name:`)
             .style("left", (event.pageX + 5) + "px")
             .style("top", (event.pageY - 28) + "px");
+          
+            if (!colorMap[d.id]) return; // Do nothing if no color is assigned
+
+          // Highlight countries with the same color
+          svg.selectAll(".country")
+            .filter(c => colorMap[c.id] === hoveredColor && c.id !== d.id)
+            .attr("fill-opacity", 0.75);
         })
         .on("mouseout", function(event, d) {
+
           // Remove the highlight
           d3.select(this)
             .attr("stroke-width", 0)
             .attr("fill-opacity", 1);
 
+          tooltip.style("opacity", 0);
+          
+          if (!colorMap[d.id]) return; // Do nothing if no color is assigned
+
           // Remove the highlight from countries with the same color
           svg.selectAll(".country")
             .attr("fill-opacity", 1);
-
-          tooltip.style("opacity", 0);
         })
         .on("click", function(event, d) {
+          if (!colorMap[d.id]) return; // Do nothing if no color is assigned
+
           const clickedColor = colorMap[d.id];
 
           // Remove any existing highlight borders
