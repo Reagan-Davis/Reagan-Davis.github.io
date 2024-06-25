@@ -70,8 +70,8 @@
   </div>
   <script>
     // Dimensions for the SVG container
-    const width = window.innerWidth/1.1;
-    const height = window.innerHeight/1.2;
+    const width = window.innerWidth / 1.1;
+    const height = window.innerHeight / 1.2;
 
     // Create an SVG container
     const svg = d3.select("body").append("svg")
@@ -80,7 +80,7 @@
 
     // Define zoom behavior
     const zoom = d3.zoom()
-      .scaleExtent([1, 8])
+      .scaleExtent([1, 15])
       .on("zoom", zoomed);
 
     // Attach zoom behavior to the SVG
@@ -105,6 +105,7 @@
     let originalColors = {};
     let worldData, colorData;
     let whiteToggled = false;
+    let currentZoomTransform = d3.zoomIdentity; // Initialize with identity transform
 
     // Load and process the world map data and the color data
     Promise.all([
@@ -154,10 +155,10 @@
           originalColors[d.id] = fillColor;
           return whiteToggled ? "#fff" : fillColor;
         })
-        .each(function(d) {
+        .each(function (d) {
           countryPaths[d.id] = this;
         })
-        .on("mouseover", function(event, d) {
+        .on("mouseover", function (event, d) {
 
           const hoveredColor = colorMap[d.id];
 
@@ -170,15 +171,15 @@
             .html(`ID: ${d.id} <br> Name:`)
             .style("left", (event.pageX + 5) + "px")
             .style("top", (event.pageY - 28) + "px");
-          
-            if (!colorMap[d.id]) return; // Do nothing if no color is assigned
+
+          if (!colorMap[d.id]) return; // Do nothing if no color is assigned
 
           // Highlight countries with the same color
           svg.selectAll(".country")
             .filter(c => colorMap[c.id] === hoveredColor && c.id !== d.id)
             .attr("fill-opacity", 0.75);
         })
-        .on("mouseout", function(event, d) {
+        .on("mouseout", function (event, d) {
 
           // Remove the highlight
           d3.select(this)
@@ -186,14 +187,14 @@
             .attr("fill-opacity", 1);
 
           tooltip.style("opacity", 0);
-          
+
           if (!colorMap[d.id]) return; // Do nothing if no color is assigned
 
           // Remove the highlight from countries with the same color
           svg.selectAll(".country")
             .attr("fill-opacity", 1);
         })
-        .on("click", function(event, d) {
+        .on("click", function (event, d) {
           if (!colorMap[d.id]) return; // Do nothing if no color is assigned
 
           const clickedColor = colorMap[d.id];
@@ -235,6 +236,11 @@
       // Debugging: Output some info to console
       console.log("Countries data:", countries);
       console.log("Color mapping:", colorMap);
+
+      // Reapply the current zoom transform
+      svg.selectAll('path')
+        .attr('transform', currentZoomTransform)
+        .attr('stroke-width', 1 / currentZoomTransform.k);
     }
 
     function drawGlobeBoundary() {
@@ -309,17 +315,17 @@
 
     function createSlider() {
       d3.select("#simplifySlider")
-        .on("input", function() {
+        .on("input", function () {
           const value = +this.value;
           drawMap(value);
         });
     }
 
     function zoomed(event) {
-      const { transform } = event;
+      currentZoomTransform = event.transform;
       svg.selectAll('path')  // Select all path elements (countries, borders)
-        .attr('transform', transform)
-        .attr('stroke-width', 1 / transform.k);  // Adjust stroke width
+        .attr('transform', currentZoomTransform)
+        .attr('stroke-width', 1 / currentZoomTransform.k);  // Adjust stroke width
     }
   </script>
 </body>
