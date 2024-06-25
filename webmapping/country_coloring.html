@@ -212,13 +212,13 @@
         .attr("class", "coastline-border")
         .attr("d", path);
 
-      // Draw the dashed borders between countries of same groups
+      // Draw the solid borders between countries of different groups
       svg.append("path")
         .datum(topojson.mesh(simplifiedTopology, simplifiedTopology.objects.countries, (a, b) => a !== b && colorMap[a.id] !== colorMap[b.id]))
         .attr("class", "country-border")
         .attr("d", path);
 
-      // Draw the dashed borders between countries of different groups
+      // Draw the dashed borders between countries of same groups
       svg.append("path")
         .datum(topojson.mesh(simplifiedTopology, simplifiedTopology.objects.countries, (a, b) => a !== b && colorMap[a.id] == colorMap[b.id]))
         .attr("class", "dashed-border")
