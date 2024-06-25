@@ -11,6 +11,12 @@
     body {
       overflow: hidden; /* Hide scrollbars */
     }
+    svg {
+      border: 2px solid black; /* Added border for SVG */
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
     .country {
       stroke: #000;
       stroke-width: 0px;
@@ -64,8 +70,8 @@
   </div>
   <script>
     // Dimensions for the SVG container
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = window.innerWidth/1.1;
+    const height = window.innerHeight/1.2;
 
     // Create an SVG container
     const svg = d3.select("body").append("svg")
@@ -156,7 +162,7 @@
             .attr("fill-opacity", 0.75);
 
           tooltip.style("opacity", 1)
-            .html(`ID: ${d.id}`)
+            .html(`ID: ${d.id} <br> Name:`)
             .style("left", (event.pageX + 5) + "px")
             .style("top", (event.pageY - 28) + "px");
         })
